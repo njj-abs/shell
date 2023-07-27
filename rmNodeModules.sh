@@ -5,8 +5,9 @@ find_directories() {
     
     find . -iname node_modules |
     xargs du |
+    grep "/node_modules/" | # du returns all the dir when no input is provided.
     awk -v threshold="$threshold" '$1 >= threshold' |
-    sed 's:/node_modules.*:/node_modules:' |
+    sed 's:/node_modules/.*:/node_modules/:' |
     awk '{print $2}' |
     uniq |
     paste -sd '\n'
@@ -40,12 +41,12 @@ delete_directories() {
 main() {
     threshold="$1"
     directories=$(find_directories "$threshold")
-
+    
     if [ -z "$directories" ]; then
         echo "No directories to delete."
         exit 0
     fi
-
+    
     if confirm_deletion "$directories"; then
         delete_directories "$directories"
     fi
