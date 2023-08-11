@@ -3,7 +3,7 @@
 find_directories() {
     local threshold="$1"
     
-    find . -iname node_modules |
+    find . -iname "node_modules" -type f -print0 |
     xargs du |
     grep "/node_modules/" | # du returns all the dir when no input is provided.
     awk -v threshold="$threshold" '$1 >= threshold' |
@@ -29,8 +29,7 @@ confirm_deletion() {
 
 delete_directories() {
     for directory in $directories; do
-        rm -rf "$directory"
-        if [ $? -eq 0 ]; then
+        if rm -rf "$directory"; then
             echo "Deleted: $directory"
         else
             echo "Failed to delete: $directory"
