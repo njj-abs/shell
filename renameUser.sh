@@ -8,22 +8,39 @@ set -e
 olduser=$1
 newuser=$2
 
-cp -r /home/$olduser /dump/$olduser
+backup_olduser() {
+    cp -r /home/$olduser /backup/$olduser
+}
 
-# Rename the user account
-usermod -l $newuser $olduser
+rename_user_account() {
+    usermod -l $newuser $olduser
+}
 
-# Rename the home directory
-usermod -d /home/$newuser -m $newuser
+rename_home_directory() {
+    usermod -d /home/$newuser -m $newuser
+}
 
-# Rename the group name
-groupmod -n $newuser $olduser
+rename_group_name() {
+    groupmod -n $newuser $olduser
+}
 
-# Update ownership and permissions
-chown -R $newuser:$newuser /home/$newuser || true
+update_ownership() {
+    chown -R $newuser:$newuser /home/$newuser || true
+}
 
-# Update occurrences in configuration files
-grep -rlI "/home/$newuser/" -e "$olduser" | uniq | sudo xargs -I {} sed -i "s/$olduser/$newuser/g" '{}'
+update_oldname_to_newname() {
+    grep -rlI "/home/$newuser/" -e "$olduser" | uniq | xargs -I {} sed -i "s/$olduser/$newuser/g" '{}'
+}
 
+main() {
+    backup_olduser
+    rename_user_account
+    rename_home_directory
+    rename_group_name
+    update_ownership
+    update_oldname_to_newname
 
-echo "User '$olduser' has been renamed to '$newuser' and home directory renamed."
+    echo "User '$olduser' has been renamed to '$newuser' and home directory renamed."
+}
+
+main "$@"
